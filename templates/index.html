@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📡 FastAPI LAN Chat</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #71b7e6, #9b59b6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .chat-container {
+      background: #fff;
+      width: 95%;
+      max-width: 500px;
+      height: 90%;
+      border-radius: 15px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    h2 {
+      text-align: center;
+      color: #333;
+      padding: 15px 0;
+      margin: 0;
+      background: #f7f7f7;
+      border-bottom: 1px solid #ddd;
+    }
+
+    #connection-info {
+      text-align: center;
+      font-size: 0.9rem;
+      color: #555;
+      margin: 10px;
+    }
+
+    #connection-info a {
+      color: #9b59b6;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    #username {
+      padding: 10px;
+      margin: 10px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+      width: calc(90% - 20px);
+    }
+
+    #chatbox {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+      background: #f0f0f0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .message {
+      margin: 5px 0;
+      padding: 10px 15px;
+      border-radius: 20px;
+      max-width: 80%;
+      word-wrap: break-word;
+      font-size: 0.95rem;
+    }
+
+    .me {
+      background: #3498db;
+      color: #fff;
+      align-self: flex-end;
+    }
+
+    .other {
+      background: #2ecc71;
+      color: #fff;
+      align-self: flex-start;
+    }
+
+    .input-row {
+      display: flex;
+      padding: 20px;
+      border-top: 1px solid #ddd;
+      background: #f7f7f7;
+    }
+
+    #messageInput {
+      flex: 1;
+      padding: 10px;
+      border-radius: 20px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+
+    #sendBtn {
+      padding: 10px 20px;
+      margin-left: 10px;
+      border-radius: 20px;
+      border: none;
+      background: #9b59b6;
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    #sendBtn:hover {
+      background: #8e44ad;
+    }
+
+    @media (max-width: 600px) {
+      #sendBtn { padding: 8px 15px; }
+      #messageInput { font-size: 0.9rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <h2>📡 FastAPI LAN Chat</h2>
+
+    <!-- 👇 Show connection info -->
+    <div id="connection-info">Detecting server address...</div>
+    <div style="text-align:center;">
+      <canvas id="qrCode"></canvas>
+    </div>
+
+    <input id="username" placeholder="Enter your name">
+    <div id="chatbox"></div>
+    <div class="input-row">
+      <input id="messageInput" placeholder="Type a message">
+      <button id="sendBtn">Send</button>
+    </div>
+  </div>
+
+  <!-- QR code generator -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
+  <script>
+    // Build WebSocket URL dynamically
+    const wsUrl = "ws://" + window.location.hostname + ":8765/ws";
+    const httpUrl = "http://" + window.location.host;
+    const ws = new WebSocket(wsUrl);
+
+    // Show server URL on the page
+    const infoBox = document.getElementById("connection-info");
+    infoBox.innerHTML = `Open this chat on other devices: 
+      <a href="${httpUrl}" target="_blank">${httpUrl}</a>`;
+
+    // Generate QR Code
+    QRCode.toCanvas(document.getElementById("qrCode"), httpUrl, { width: 120 }, function (error) {
+      if (error) console.error(error);
+    });
+
+    ws.onopen = () => console.log("✅ Connected to chat server.");
+
+    ws.onmessage = function(event) {
+      const chatbox = document.getElementById("chatbox");
+      const msgDiv = document.createElement("div");
+
+      if (event.data.startsWith(document.getElementById("username").value + ":")) {
+        msgDiv.className = "message me";
+      } else {
+        msgDiv.className = "message other";
+      }
+
+      msgDiv.textContent = event.data;
+      chatbox.appendChild(msgDiv);
+      chatbox.scrollTop = chatbox.scrollHeight;
+    };
+
+    document.getElementById("sendBtn").onclick = sendMessage;
+    document.getElementById("messageInput").addEventListener("keyup", function(event) {
+      if (event.key === "Enter") sendMessage();
+    });
+
+    function sendMessage() {
+      const username = document.getElementById("username").value || "Anonymous";
+      const message = document.getElementById("messageInput").value;
+      if (!message.trim()) return;
+
+      ws.send(username + ": " + message);
+      document.getElementById("messageInput").value = "";
+    }
+  </script>
+</body>
+</html>

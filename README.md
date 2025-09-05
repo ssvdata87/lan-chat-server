@@ -73,6 +73,8 @@ On another device connected to the same Wi-Fi:
 
 📜 License
 
-This project is licensed under the Apachi 2.0 License – free to use, modify, and share.
+This project is licensed under the Apache 2.0 License – free to use, modify, and share.  
+                              Apache License
+                           Version 2.0, January 2004
 
 ⚡ Made with ❤️ using FastAPI + WebSockets

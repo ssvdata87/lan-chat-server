@@ -35,7 +35,7 @@ lan-chat-server/
 
 ▶️ Installation & Usage
 1️⃣ Clone the repository
-git clone https://github.com/YOUR-USERNAME/lan-chat-server.git
+git clone https://github.com/ssvdata87/lan-chat-server
 cd lan-chat-server
 
 2️⃣ Create a virtual environment
